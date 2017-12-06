@@ -3,7 +3,6 @@
 #include <cmath>
 #include "MurmurHash3.h"
 using namespace std;
-using namespace boost::numeric::ublas;
 
 
 template <class T>
@@ -33,17 +32,27 @@ struct OneSparse {
 
 template <class T>
 struct SSparse {
-    matrix<OneSparse<T> > M;
+    int d, w, s;
+    boost::numeric::ublas::matrix<OneSparse<T> > M;
     
-    SSparse(int s, double delta) {
-        int w = 2*s;
-        int d = ceil(log2(s/delta));   
-        
-        M.resize(w, d, false);
+    SSparse(int s, double delta) : 
+        s(s), d(ceil(log2(s/delta))), w(2*s), M(d, w) {
     }
     
     void update(int i, T delta) {
+        uint64_t hash[2];
+        uint32_t seed = 0;
         
+        for(int j=0; j<d; j++) {
+            MurmurHash3_x64_128(&i, sizeof(int), seed, hash);
+            
+            M(j, hash[0]%w).update(i, delta);
+            seed = hash[1];
+        }
+    }
+    
+    bool recover(vector<OneSparse<T> > &V) {
+        return true;
     }
 };
 
