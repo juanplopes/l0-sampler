@@ -1,0 +1,8 @@
+uva/*.exe
+timus/*.exe
+*.*~
+*~
+*.sol
+*.in
+*.out
+/*.html
