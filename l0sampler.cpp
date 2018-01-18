@@ -6,6 +6,8 @@
 #include <set>
 #include "MurmurHash3.cpp"
 #define P 18446744073709551557ull
+#define SQRT2 1.414213562
+#define SBASE 0.506931309
 using namespace std;
 using namespace boost::multiprecision;
 
@@ -60,9 +62,20 @@ struct SSparse {
     boost::numeric::ublas::matrix<OneSparse> M;
     
     SSparse(int s, double delta) : 
-        s(s), w2(0), d(ceil(log2(s/delta))), w(2*s), M(d, w), z(dist(e2))  {
+        s(s), w2(0), d(ceil(log(delta/s)/log(SBASE))), w(SQRT2*s), M(d, w), z(dist(e2))  {
     }
-    
+
+    SSparse(int s, int d, int w) : 
+        s(s), w2(0), d(d), w(w), M(d, w), z(dist(e2))  {
+        
+        /*for(int i=0; i<d; i++) {
+            for(int j=0; j<w; j++) {
+                cout << " " << M(i, j).z;
+            }
+            cout << endl;
+        }*/
+    }
+
     void update(int i, long long delta) {
         uint64_t hash[2];
         uint32_t seed = 0;
@@ -81,8 +94,8 @@ struct SSparse {
         if (w2 == 0) return false;
 
         uint128_t sig = 0;
-        for(int i=0; i<d and V.size() < s; i++) {
-            for(int j=0; j<w and V.size() < s; j++) {
+        for(int i=0; i<d; i++) {
+            for(int j=0; j<w; j++) {
                 if (M(i, j).size() == 1) {
                     Item r = M(i, j).recover();
                     if (V.insert(r).second) {

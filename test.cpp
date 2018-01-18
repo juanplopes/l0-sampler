@@ -2,24 +2,43 @@
 
 int T[10000];
 int main() {
-    for(int i=1; i<=100001; i+=1000) {
-        L0Sampler S(i, 0.01);
-        cout << i << " " << S.bytes() << endl;
-    }
-/*    L0Sampler S(1024, 0.1);
-    for(int i=2; i<=1000; i+=2) {
-        S.update(i, -10);
-        S.update(i-1, 10);
-        S.update(i-1, -10);
-    }
 
-    Item item; 
-    if (S.recover(item)) {
-        T[item.index]++;
-        cout << item.index << " " << item.value << endl;
-    } else {
-        cout << "FAILED!" << endl;
-    }
-    cout << S.bytes() << endl;*/
+/* //    SSparse S(30, 1);
+    SSparse S(30, 6, 42);
+    cout << " " << S.d << " " << S.w << endl;
+    
+    for(int k=1; k<=30; k++)
+        S.update(dist32(e2) % 100007, 1);
+    
+    set<Item> V;
+    cout << " " << S.recover(V) << endl;
 
+    for(auto it = V.begin(); it != V.end(); it++) {
+        cout << " " << it->index << "=" << it->value << endl;
+    }
+    cout << endl;*/
+
+    for(double i=0.01; i<=1; i+=0.01) {
+        double delta = i;
+        int n = 30;
+        int total = 10000, count = 0;
+
+        SSparse S(n, delta);
+        cout << " " << S.d << " " << S.w << endl;
+
+        for(int j=0; j<total; j++) {
+            SSparse S(n, delta);
+//            cout << " " << S.d << " " << S.w << endl;
+            
+            for(int k=1; k<=n; k++)
+                S.update(dist32(e2) % 100007, 1);
+            
+            set<Item> V;
+            if (not S.recover(V)) {         
+                count++;
+            }
+        }
+        cout << i << " " << count << endl;
+
+    }
 }
