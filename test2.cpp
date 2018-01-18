@@ -2,6 +2,8 @@
 #include<random>
 #include<set>
 #include<cstring>
+#define SQRT2 1.414213562
+#define SBASE 0.506931309
 using namespace std;
 
 std::random_device rd;
@@ -36,12 +38,34 @@ bool test(int n, int m, int d) {
     return S.size() == n;
 }
 
-int main() {
-    int total = 100000, count = 0;
-    for(int i=0; i<total; i++) {
-        if (not test(30, 42, 12))
+int round(int total, int n, int m, int d) {
+    int count = 0;
+    for(int i=0; i<total; i++)
+        if (not test(n, m, d))
             count++;
+    return count;
+}
+
+int main() {
+    int n = 100;
+    for(double delta=0.01; delta <= 1; delta += 0.01) {
+        int m1 = 2*n;
+        int d1 = ceil(log2(n/delta));
+        int m2 = SQRT2*n;
+        int d2 = ceil(log(delta/n)/log(SBASE));
+    
+        int total = 10000;
+    
+        cout << delta;
+    
+        int r1 = round(total, n, m1, d1);
+        cout << " " << r1/(double)total;
+        
+        int r2 = round(total, n, m2, d2);
+        cout << " " << r2/(double)total;
+        cout << endl;
     }
-    cout << count << "/" << total << ": " << (count/(float)total) << endl;
+
+
 
 }
