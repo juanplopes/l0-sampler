@@ -47,11 +47,13 @@ int round(int total, int n, int m, int d) {
 }
 
 int main() {
-    int n = 100;
-    for(double delta=0.01; delta <= 1; delta += 0.01) {
+//    int n = 100;
+    for(int n = 10; n < 1000; n += 10) {
+        double delta = 0.01;
+
         int m1 = 2*n;
         int d1 = ceil(log2(n/delta));
-        int m2 = SQRT2*n;
+        int m2 = ceil(SQRT2*n);
         int d2 = ceil(log(delta/n)/log(SBASE));
     
         int total = 10000;
@@ -65,7 +67,5 @@ int main() {
         cout << " " << r2/(double)total;
         cout << endl;
     }
-
-
 
 }
