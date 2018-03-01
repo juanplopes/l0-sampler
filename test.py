@@ -8,24 +8,24 @@ def ncr(n, r):
     denom = reduce(op.mul, xrange(1, r+1))
     return numer//denom
 
-def probsingle(n, m, d, i):
+def probsingle(n, m, i):
     f = Fraction(1, 1)
     for j in range(i):
         f = f * Fraction(m-j, m)
     for j in range(i, n):
         f = f * Fraction(m-i, m)
+    return f
+
+def probi(n, m, d, i):
+    f = Fraction(0, 1)
+    for j in range(1, i+1):
+        f += (-1)**(j+1) * ncr(i, j) * probsingle(n, m, j)
     return (1 - f) ** d
 
-def prob2(n, m, d):
-    f = Fraction
-    print float((1-f(1, m))**(n-1)), float(f(m-1, m)*(1 - f(2, m))**(n-2))
-    return ((2*(1-f(1, m))**(n-1) - f(m-1, m)*(1 - f(2, m))**(n-2)))
-
 def prob(n, m, d):
-    total = Fraction(0, 1)
-    for i in range(1, n+1):
-        print i, float(total)
-        total += (-1)**(i) * ncr(n, i) * probsingle(n, m, d, i)
-    return total
+    f = Fraction(0, 1)
+    for j in range(1, n+1):
+        f += (-1)**(j+1) * ncr(n, j) * probi(n, m, d, j)
+    return f
         
-print float(prob2(10, 20, 1)), float(probsingle(10, 20, 1, 2))
+print float(prob(10, 14, 8))
