@@ -35,7 +35,7 @@ bool test(int n, int m, int d) {
                 S.insert(last[j][i]);
         }    
     }
-    return S.size() == n;
+    return S.find(1) != S.end() && S.find(2) != S.end();
 }
 
 int round(int total, int n, int m, int d) {
@@ -47,7 +47,9 @@ int round(int total, int n, int m, int d) {
 }
 
 int main() {
-//    int n = 100;
+    cout << round(100000, 10, 20, 1)/100000.0 << endl;
+
+/*//    int n = 100;
     for(int n = 10; n < 1000; n += 10) {
         double delta = 0.01;
 
@@ -66,6 +68,6 @@ int main() {
         int r2 = round(total, n, m2, d2);
         cout << " " << r2/(double)total;
         cout << endl;
-    }
+    }*/
 
 }
