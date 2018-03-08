@@ -18,27 +18,33 @@ int main() {
     }
     cout << endl;*/
 
-    for(double i=0.01; i<=1; i+=0.01) {
-        double delta = i;
-        int n = 30;
+    cout << sizeof(OneSparse) << endl;
+
+    for(int i=1; i<7; i++) {
+        int n = 30, m = 8;
         int total = 10000, count = 0;
 
-        SSparse S(n, delta);
-        cout << " " << S.d << " " << S.w << endl;
+        L0Sampler S(1<<m, i);
+        cout << " " << S.m << " " << S.d << " " << S.bytes() << endl;
 
         for(int j=0; j<total; j++) {
-            SSparse S(n, delta);
-//            cout << " " << S.d << " " << S.w << endl;
+            L0Sampler S(1<<m, i);
             
             for(int k=1; k<=n; k++)
-                S.update(dist32(e2) % 100007, 1);
+                S.update(k, 1);
             
-            set<Item> V;
-            if (not S.recover(V)) {         
+            Item item;
+            if (not S.recover(item)) {         
                 count++;
+            } else {
+                T[item.index]++;
             }
         }
-        cout << i << " " << count << endl;
+        cout << i << " " << count/(double)total << ":";
+        for(int j=1; j<=n; j++) {
+            cout << " " << T[j];
+        }
+        cout << endl;
 
     }
 }

@@ -33,8 +33,9 @@ struct Item {
 };
 
 struct OneSparse {
-    long long w0, w1;
-    int128_t w2; long long z;
+    int64_t w0, w1;
+    int128_t w2; 
+    uint64_t z;
     
     OneSparse() : w0(0), w1(0), w2(0), z(dist(e2)) {}
 
@@ -55,119 +56,47 @@ struct OneSparse {
     }
 };
 
-struct SSparse {
-    int d, w, s;
-    uint128_t w2; long long z;
-    
-    boost::numeric::ublas::matrix<OneSparse> M;
-    
-    SSparse(int s, double delta) : 
-        s(s), w2(0), d(ceil(log(delta/s)/log(SBASE))), w(SQRT2*s), M(d, w), z(dist(e2))  {
-    }
-
-    SSparse(int s, int d, int w) : 
-        s(s), w2(0), d(d), w(w), M(d, w), z(dist(e2))  {
-        
-        /*for(int i=0; i<d; i++) {
-            for(int j=0; j<w; j++) {
-                cout << " " << M(i, j).z;
-            }
-            cout << endl;
-        }*/
-    }
-
-    void update(int i, long long delta) {
-        uint64_t hash[2];
-        uint32_t seed = 0;
-
-        for(int j=0; j<d; j++) {
-            MurmurHash3_x64_128(&i, sizeof(int), seed, hash);
-            
-            M(j, hash[0]%w).update(i, delta);
-            seed = hash[1];
-        }
-        
-        w2 += delta * ppow(z, i);
-    }
-    
-    bool recover(set<Item> &V) {
-        if (w2 == 0) return false;
-
-        uint128_t sig = 0;
-        for(int i=0; i<d; i++) {
-            for(int j=0; j<w; j++) {
-                if (M(i, j).size() == 1) {
-                    Item r = M(i, j).recover();
-                    if (V.insert(r).second) {
-                        sig += r.value * ppow(z, r.index);
-                    }
-                }
-            }
-        }
-
-        return w2 == sig;
-    }
-    
-    int bytes() {
-        return d*w*sizeof(Item)+sizeof(SSparse);
-    }
-};
-
 struct L0Sampler {
-    vector<SSparse> M;
-    int m, s, n;
+    boost::numeric::ublas::matrix<OneSparse> M;
+    int n, m, d;
     unsigned int seed;
-    uint64_t n3;
-    SSparse one;
     
-    L0Sampler(int n, double delta) : 
-        n(n), n3((uint64_t)n*n*n), s(12*ceil(log2(1/delta))), m(ceil(3*log2(n))+1), 
-        seed(dist32(e2)), one(s, delta) { 
-
-        for(int j=0; j<m; j++) {
-            M.push_back(SSparse(s, delta));
-        }
-        
+    L0Sampler(int n, int d) : 
+        n(n), m(ceil(log(n)/log(2))), d(d), seed(dist32(e2)), M(d, ceil(log(n)/log(2))) { 
     }
     
     void update(int i, long long delta) {
-        uint64_t hash = h(i);
-        for(int j=0; j<m; j++)
-            if (n3/(1ll<<j) >= hash)
-                M[j].update(i, delta);
+        unsigned int seed = this->seed;
+        for(int j=0; j<d; j++) {
+            uint64_t hash = h(i, seed);
+            seed = (unsigned int)hash;
+            if (hash == 0) continue;
+            
+            int pos = floor(log(hash)/log(2));
+            M(j, pos).update(i, delta);
+        }
     }
     
-    uint64_t h(int i) {
+    uint64_t h(int i, unsigned int seed) {
         uint64_t hash[2];
         MurmurHash3_x64_128(&i, sizeof(int), seed, hash);
- 
-        return hash[0] % n3;
+        return hash[0] % n;
     }
     
     bool recover(Item &recovered) {
-        set<Item> S;
-        for(int j=0; j<m; j++) {
-            S.clear();
-            if (M[j].recover(S)) {
-                set<Item>::iterator it = S.begin();
-                Item item = *it;
-                uint64_t minn = h(item.index);
-                for(++it; it != S.end(); it++) {
-                    uint64_t cand = h(it->index);
-                    if (cand < minn) {
-                        minn = cand;
-                        item = *it;
-                    }
+        for(int i=0; i<d; i++) {
+            for(int j=0; j<m; j++) {
+                if(M(i, j).size() == 1) {
+                    recovered = M(i, j).recover();
+                    return true;
                 }
-                recovered = item;
-                return true;
             }
         }
         return false;
     }
     
     int bytes() {
-        return m*M[0].bytes()+sizeof(L0Sampler);
+        return m*d*sizeof(OneSparse)+sizeof(L0Sampler);
     }
 };
 
