@@ -28,4 +28,8 @@ def prob(n, m, d):
         f += (-1)**(j+1) * ncr(n, j) * probi(n, m, d, j)
     return f
         
-print float(prob(10, 14, 8))
+print float(prob(100, 140, 8))
+
+#\begin{align*}
+#\sum_{i=1}^n (-1)^{j+1} {n \choose i} \left(1 - \sum_{j=1}^i (-1)^{j+1} {i \choose j} \frac{m}{m} \times \frac{m-1}{m} \times  \ldots \times \frac{m-j+1}{m} \times \left(\frac{m-j}{m}\right)^{n-j} \right)^d
+#\end{align*}

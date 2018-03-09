@@ -47,7 +47,7 @@ int round(int total, int n, int m, int d) {
 }
 
 int main() {
-    cout << round(100000, 10, 14, 8)/100000.0 << endl;
+    cout << round(100000, 100, 140, 8)/100000.0 << endl;
 
 /*//    int n = 100;
     for(int n = 10; n < 1000; n += 10) {
