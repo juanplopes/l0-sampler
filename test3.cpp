@@ -10,18 +10,21 @@ std::random_device rd;
 std::mt19937_64 e2(rd());
 
 int result[1000][100];
+int result2[1000];
 int cnt[100];
 
 bool test(int m) {
-    uniform_int_distribution<int> dist32(std::llround(0), std::llround(32));
+    uniform_int_distribution<int> dist32(std::llround(-2147483648), std::llround(2147483647));
 
+    int step = m/100;
     memset(cnt, 0, sizeof(cnt));
     for(int j=0; j<m; j++) {
-        if (j%100 == 0) {
+        if (j % step == 0) {
             for(int i=0; i<=32; i++) {
                 if (cnt[i] == 1) {
-                    result[j/100][i]++;
-                    //break;
+                    result[j/step][i]++;
+                    result2[j/step]++;
+                    break;
                 }
             }
         }
@@ -62,10 +65,10 @@ double total(int n) {
 }
 
 int main() {
-    cerr << round(100000, 1)/100000.0 << endl;
+    cerr << round(100000, 100)/100000.0 << endl;
     
-    for(long long i=1; i<=2000000000; i*=2) {
-        cerr << i << "\t" << total(i) << endl;
+    for(int i=1; i<100; i++) {
+        cout << i << "\t" << 1-result2[i]/100000.0 << endl;
     }
     
 
