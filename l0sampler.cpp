@@ -58,11 +58,11 @@ struct OneSparse {
 
 struct L0Sampler {
     boost::numeric::ublas::matrix<OneSparse> M;
-    int n, m, d;
+    int m, d;
     unsigned int seed;
     
-    L0Sampler(int n, int d) : 
-        n(n), m(ceil(log(n)/log(2))), d(d), seed(dist32(e2)), M(d, ceil(log(n)/log(2))) { 
+    L0Sampler(int m, int d) : 
+        m(m), d(d), seed(dist32(e2)), M(d, m) { 
     }
     
     void update(int i, long long delta) {
@@ -72,7 +72,7 @@ struct L0Sampler {
             seed = (unsigned int)hash;
             if (hash == 0) continue;
             
-            int pos = floor(log(hash)/log(2));
+            int pos = floor(log2(hash));
             M(j, pos).update(i, delta);
         }
     }
@@ -80,7 +80,54 @@ struct L0Sampler {
     uint64_t h(int i, unsigned int seed) {
         uint64_t hash[2];
         MurmurHash3_x64_128(&i, sizeof(int), seed, hash);
-        return hash[0] % n;
+        return hash[0] % (1<<m);
+    }
+    
+    bool recover(Item &recovered) {
+        for(int i=0; i<d; i++) {
+            for(int j=0; j<m; j++) {
+                if(M(i, j).size() == 1) {
+                    recovered = M(i, j).recover();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    int bytes() {
+        return m*d*sizeof(OneSparse)+sizeof(L0Sampler);
+    }
+};
+
+struct L0SamplerAlt {
+    boost::numeric::ublas::matrix<OneSparse> M;
+    int m, d;
+    unsigned int seed;
+    
+    L0SamplerAlt(int m, int d) : 
+        m(m), d(d), seed(dist32(e2)), M(d, m) { 
+    }
+    
+    void update(int i, long long delta) {
+        unsigned int seed = this->seed;
+        for(int j=0; j<d; j++) {
+            for(int k=0; k<m; k++) {
+                uint64_t hash = h(i, seed);
+                seed = (unsigned int)hash;
+                if (hash == 0) continue;
+                
+                int pos = floor(log2(hash));
+                if (pos != k) continue;
+                M(j, pos).update(i, delta);
+            }
+        }
+    }
+    
+    uint64_t h(int i, unsigned int seed) {
+        uint64_t hash[2];
+        MurmurHash3_x64_128(&i, sizeof(int), seed, hash);
+        return hash[0] % (1<<m);
     }
     
     bool recover(Item &recovered) {

@@ -1,50 +1,50 @@
 #include "l0sampler.cpp"
+using namespace std;
 
-int T[10000];
-int main() {
+int cnt1[200], cnt2[200];
+int step = 32;
+int tests = 1000;
+int size = ceil(log2(step*128))+5;
 
-/* //    SSparse S(30, 1);
-    SSparse S(30, 6, 42);
-    cout << " " << S.d << " " << S.w << endl;
+void test1(int n) {
+    L0Sampler sampler(size, 1);
+    Item item;
     
-    for(int k=1; k<=30; k++)
-        S.update(dist32(e2) % 100007, 1);
-    
-    set<Item> V;
-    cout << " " << S.recover(V) << endl;
-
-    for(auto it = V.begin(); it != V.end(); it++) {
-        cout << " " << it->index << "=" << it->value << endl;
+    for(int j=1; j<=n; j++) {
+        sampler.update(j*37, 1);
+        if (j % step == 0) {
+            if (sampler.recover(item))
+                cnt1[j/step]++;
+        }
     }
-    cout << endl;*/
+}
 
-    cout << sizeof(OneSparse) << endl;
-
-    for(int i=1; i<7; i++) {
-        int n = 30, m = 8;
-        int total = 10000, count = 0;
-
-        L0Sampler S(1<<m, i);
-        cout << " " << S.m << " " << S.d << " " << S.bytes() << endl;
-
-        for(int j=0; j<total; j++) {
-            L0Sampler S(1<<m, i);
-            
-            for(int k=1; k<=n; k++)
-                S.update(k, 1);
-            
-            Item item;
-            if (not S.recover(item)) {         
-                count++;
-            } else {
-                T[item.index]++;
-            }
+void test2(int n) {
+    L0SamplerAlt sampler(size, 1);
+    Item item;
+    
+    for(int j=1; j<=n; j++) {
+        sampler.update(j*37, 1);
+        if (j % step == 0) {
+            if (sampler.recover(item))
+                cnt2[j/step]++;
         }
-        cout << i << " " << count/(double)total << ":";
-        for(int j=1; j<=n; j++) {
-            cout << " " << T[j];
-        }
-        cout << endl;
+    }
+}
 
+int round(int total, int n) {
+    for(int i=1; i<=total; i++) {
+        if (i%10 == 0) 
+            cerr << i << endl;
+        test1(n);
+        test2(n);
+    }
+}
+
+int main() {
+    round(tests, 128*step);
+    
+    for(int i=1; i<=128; i++) {
+        cout << i*step << "\t" << 1-cnt1[i]/(double)tests << "\t" << 1-cnt2[i]/(double)tests << endl;
     }
 }
