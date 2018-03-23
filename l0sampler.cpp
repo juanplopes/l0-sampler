@@ -72,7 +72,8 @@ struct L0Sampler {
             seed = (unsigned int)hash;
             if (hash == 0) continue;
             
-            int pos = floor(log2(hash));
+            int pos = __builtin_clzll(hash)-(64-m);
+            //cout << " " << hash << " " << pos << " " << m << endl;
             M(j, pos).update(i, delta);
         }
     }
@@ -80,7 +81,7 @@ struct L0Sampler {
     uint64_t h(int i, unsigned int seed) {
         uint64_t hash[2];
         MurmurHash3_x64_128(&i, sizeof(int), seed, hash);
-        return hash[0] % (1<<m);
+        return hash[0] & ((1<<m)-1);
     }
     
     bool recover(Item &recovered) {
@@ -117,7 +118,7 @@ struct L0SamplerAlt {
                 seed = (unsigned int)hash;
                 if (hash == 0) continue;
                 
-                int pos = floor(log2(hash));
+                int pos = __builtin_clzll(hash)-(64-m);
                 if (pos != k) continue;
                 M(j, pos).update(i, delta);
             }
@@ -127,7 +128,7 @@ struct L0SamplerAlt {
     uint64_t h(int i, unsigned int seed) {
         uint64_t hash[2];
         MurmurHash3_x64_128(&i, sizeof(int), seed, hash);
-        return hash[0] % (1<<m);
+        return hash[0] & ((1<<m)-1);
     }
     
     bool recover(Item &recovered) {
